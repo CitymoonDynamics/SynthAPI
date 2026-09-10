@@ -1,0 +1,43 @@
+plugins {
+    id 'java-library'
+}
+
+group = 'org.citymoon.dynamics'
+def requestedVersion = findProperty('version')?.toString()
+version = (requestedVersion == null || requestedVersion.isBlank() || requestedVersion == 'unspecified') ? '1.0.0' : requestedVersion
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+    withSourcesJar()
+    withJavadocJar()
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url = uri('https://hub.spigotmc.org/nexus/content/repositories/snapshots/')
+        content {
+            includeGroup('org.bukkit')
+            includeGroup('org.spigotmc')
+        }
+    }
+}
+
+dependencies {
+    compileOnly('org.bukkit:bukkit:1.8.8-R0.1-SNAPSHOT')
+}
+
+tasks.named('jar', Jar) {
+    archiveBaseName = 'synth-api'
+    archiveVersion = project.version.toString()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Jar).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}

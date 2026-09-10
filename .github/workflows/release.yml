@@ -1,0 +1,102 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Prepare
+        id: release
+        shell: bash
+        run: |
+          if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            TAG="${GITHUB_REF_NAME}"
+          else
+            TAG="${{ inputs.tag }}"
+          fi
+
+          if [[ ! "$TAG" =~ ^v.+$ ]]; then
+            echo "Invalid release tag: $TAG"
+            exit 1
+          fi
+
+          VERSION="${TAG#v}"
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: ./gradlew clean jar --no-daemon -Pversion="${{ steps.release.outputs.version }}"
+
+      - name: Verify artifact
+        id: artifact
+        shell: bash
+        run: |
+          shopt -s nullglob
+          candidates=(build/libs/synth-api-*.jar)
+          artifacts=()
+          for f in "${candidates[@]}"; do
+            case "$f" in
+              *-sources.jar|*-javadoc.jar) continue ;;
+              *) artifacts+=("$f") ;;
+            esac
+          done
+
+          if (( ${#artifacts[@]} == 0 )); then
+            echo "No synth-api JAR found in build/libs"
+            find build/libs -maxdepth 1 -type f -print 2>/dev/null || true
+            exit 1
+          fi
+
+          if (( ${#artifacts[@]} > 1 )); then
+            echo "Multiple synth-api JARs found:"
+            printf '%s\n' "${artifacts[@]}"
+            exit 1
+          fi
+
+          echo "path=${artifacts[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.release.outputs.tag }}
+          VERSION: ${{ steps.release.outputs.version }}
+          ARTIFACT: ${{ steps.artifact.outputs.path }}
+        run: |
+          gh release create "$TAG" "$ARTIFACT" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "synth-api $VERSION" \
+            --generate-notes
