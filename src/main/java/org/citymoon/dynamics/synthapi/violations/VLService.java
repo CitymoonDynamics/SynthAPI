@@ -8,6 +8,6 @@ public final class VLService {
     public double getVL(UUID playerUUID, String friendlyName) {
         Objects.requireNonNull(playerUUID, "playerUUID");
         Objects.requireNonNull(friendlyName, "friendlyName");
-        return SynthAPI.requireBackend().readVL(playerUUID, friendlyName.trim());
+        return SynthAPI.requireBackend().getVL(playerUUID, friendlyName.trim());
     }
 }

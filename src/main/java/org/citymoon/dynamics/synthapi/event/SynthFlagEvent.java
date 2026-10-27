@@ -17,7 +17,11 @@ public class SynthFlagEvent extends Event implements Cancellable {
     private boolean cancelled;
 
     public SynthFlagEvent(Player player, String checkFriendlyName, String checkName, String checkType, double violations, double maxViolations) {
-        super(!Bukkit.isPrimaryThread());
+        this(player, checkFriendlyName, checkName, checkType, violations, maxViolations, !Bukkit.isPrimaryThread());
+    }
+
+    public SynthFlagEvent(Player player, String checkFriendlyName, String checkName, String checkType, double violations, double maxViolations, boolean async) {
+        super(async);
         this.player = player;
         this.checkFriendlyName = checkFriendlyName;
         this.checkName = checkName;

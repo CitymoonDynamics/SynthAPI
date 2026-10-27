@@ -36,4 +36,36 @@ public final class CheckSnapshot {
     public boolean isEnabled() {
         return enabled;
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof CheckSnapshot)) {
+            return false;
+        }
+        CheckSnapshot snapshot = (CheckSnapshot) other;
+        return enabled == snapshot.enabled
+                && friendlyName.equals(snapshot.friendlyName)
+                && name.equals(snapshot.name)
+                && type.equals(snapshot.type)
+                && category.equals(snapshot.category);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = friendlyName.hashCode();
+        result = 31 * result + name.hashCode();
+        result = 31 * result + type.hashCode();
+        result = 31 * result + category.hashCode();
+        result = 31 * result + (enabled ? 1 : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "CheckSnapshot{friendlyName='" + friendlyName + "', name='" + name
+                + "', type='" + type + "', category='" + category + "', enabled=" + enabled + '}';
+    }
 }

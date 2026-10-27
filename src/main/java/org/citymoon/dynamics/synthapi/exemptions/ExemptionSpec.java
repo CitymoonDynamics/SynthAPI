@@ -2,6 +2,7 @@ package org.citymoon.dynamics.synthapi.exemptions;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +38,11 @@ public final class ExemptionSpec {
         Set<String> normalized = new HashSet<String>();
         for (String name : friendlyNames) {
             Objects.requireNonNull(name, "check name");
-            normalized.add(name.trim());
+            String trimmed = name.trim();
+            if (trimmed.isEmpty()) {
+                throw new IllegalArgumentException("check name must not be blank");
+            }
+            normalized.add(trimmed);
         }
         return new ExemptionSpec(ScopeType.CHECKS, normalized, null, toMillis(duration, unit), requireReason(reason));
     }
@@ -45,7 +50,11 @@ public final class ExemptionSpec {
     public static ExemptionSpec forCheckType(String checkType, long duration, TimeUnit unit, String reason) {
         Objects.requireNonNull(checkType, "checkType");
         Objects.requireNonNull(unit, "unit");
-        return new ExemptionSpec(ScopeType.CHECK_TYPE, Collections.<String>emptySet(), checkType.trim().toUpperCase(), toMillis(duration, unit), requireReason(reason));
+        String normalizedType = checkType.trim().toUpperCase(Locale.ROOT);
+        if (normalizedType.isEmpty()) {
+            throw new IllegalArgumentException("checkType must not be blank");
+        }
+        return new ExemptionSpec(ScopeType.CHECK_TYPE, Collections.<String>emptySet(), normalizedType, toMillis(duration, unit), requireReason(reason));
     }
 
     public static ExemptionSpec forAll(long duration, TimeUnit unit, String reason) {

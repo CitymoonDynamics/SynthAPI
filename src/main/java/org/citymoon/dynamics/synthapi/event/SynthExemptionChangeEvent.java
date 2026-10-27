@@ -14,7 +14,11 @@ public class SynthExemptionChangeEvent extends Event {
     private final boolean added;
 
     public SynthExemptionChangeEvent(UUID playerUUID, String pluginName, String scope, long ttlSeconds, boolean added) {
-        super(!Bukkit.isPrimaryThread());
+        this(playerUUID, pluginName, scope, ttlSeconds, added, !Bukkit.isPrimaryThread());
+    }
+
+    public SynthExemptionChangeEvent(UUID playerUUID, String pluginName, String scope, long ttlSeconds, boolean added, boolean async) {
+        super(async);
         this.playerUUID = playerUUID;
         this.pluginName = pluginName;
         this.scope = scope;

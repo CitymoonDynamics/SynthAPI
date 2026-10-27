@@ -18,7 +18,7 @@ public interface SynthAPIBackend {
 
     boolean isExempt(UUID playerUUID, String friendlyName);
 
-    Set<CheckSnapshot> snapshots();
+    Set<CheckSnapshot> getSnapshots();
 
-    double readVL(UUID playerUUID, String friendlyName);
+    double getVL(UUID playerUUID, String friendlyName);
 }

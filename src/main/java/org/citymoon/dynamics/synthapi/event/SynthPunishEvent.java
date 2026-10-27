@@ -16,7 +16,11 @@ public class SynthPunishEvent extends Event implements Cancellable {
     private boolean cancelled;
 
     public SynthPunishEvent(Player player, String checkFriendlyName, String checkName, String checkType, double violations) {
-        super(!Bukkit.isPrimaryThread());
+        this(player, checkFriendlyName, checkName, checkType, violations, !Bukkit.isPrimaryThread());
+    }
+
+    public SynthPunishEvent(Player player, String checkFriendlyName, String checkName, String checkType, double violations, boolean async) {
+        super(async);
         this.player = player;
         this.checkFriendlyName = checkFriendlyName;
         this.checkName = checkName;
